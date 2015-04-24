@@ -56,10 +56,14 @@ function FileLog(options, parent) {
 	self.parent = parent;
 
 	if (self.parent)
-		_.each(self.parent.paths, function (path) {
+		_.each(self.parent.paths, function (parentPath) {
+
+			var _find = _.find(self.paths, function (path) { return path.path == parentPath.path });
+
+			if (_find) return;
 
 			self.paths.push({
-				path: path.path
+				path: parentPath.path
 			});
 
 		});
