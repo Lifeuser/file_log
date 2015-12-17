@@ -59,16 +59,9 @@ function FileLog(options, parent) {
 	self.params = ['@date', '@time', '@timestamp', '@host'];
 	self.paths = options.paths;
 
-	// changing format of default params
-	if (options.defaults)
-		_.each(options.defaults, function (v, k) {
-			if ( _(self.params).includes(k) && _(defaults).has(k) )
-				defaults[k] = v;
-		});
-
 	self.parent = parent;
 
-	if (self.parent)
+	if (self.parent) {
 		_.each(self.parent.paths, function (parentPath) {
 
 			var _find = _.find(self.paths, function (path) { return path.path == parentPath.path });
@@ -78,8 +71,21 @@ function FileLog(options, parent) {
 			self.paths.push({
 				path: parentPath.path
 			});
-
 		});
+
+		if (self.parent.defaults)
+			defaults = self.parent.defaults;
+	}
+
+	// changing format of default params
+	if (options.defaults) {
+		_.each(options.defaults, function (v, k) {
+			if ( _(self.params).includes(k) && _(defaults).has(k) )
+				defaults[k] = v;
+		});
+
+		self.defaults = defaults;
+	}
 
 }
 
