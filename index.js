@@ -1,14 +1,19 @@
 var fs = require('fs'),
-	exec = require('child_process').exec
+	exec = require('child_process').exec,
 	moment = require('moment'),
 	_ = require('lodash');
 
 var hostname = null;
 
-exec('hostname -f', function (error, _hostname) {
-	hostname = _hostname.replace(/[\n\r]+/g, '');
-});
+var defaults = {
+	'@date': 'YYYY-MM-DD',
+	'@time': 'HH-mm-ss',
+	'@host': null
+};
 
+exec('hostname -f', function (error, _hostname) {
+	defaults['@host'] = _hostname.replace(/[\n\r]+/g, '');
+});
 
 var tasks = [],
 	working = false;
@@ -51,8 +56,16 @@ function FileLog(options, parent) {
 
 	var self = this;
 
-	self.params = ['@date', '@timestamp', '@host'];
+	self.params = ['@date', '@time', '@timestamp', '@host'];
 	self.paths = options.paths;
+
+	// changing format of default params
+	if (options.defaults)
+		_.each(options.defaults, function (v, k) {
+			if ( _(self.params).includes(k) && _(defaults).has(k) )
+				defaults[k] = v;
+		});
+
 	self.parent = parent;
 
 	if (self.parent)
@@ -99,13 +112,16 @@ FileLog.prototype.log = function (keys, message) {
 				re = new RegExp(paramOption, 'g');
 
 			if (paramOption == '@date')
-				replacement = date.format('YYYY-MM-DD');
+				replacement = date.format(defaults['@date']);
+
+			if (paramOption == '@time')
+				replacement = date.format(defaults['@time']);
 
 			if (paramOption == '@timestamp')
 				replacement = date.valueOf();
 
 			if (paramOption == '@host')
-				replacement = hostname;
+				replacement = defaults['@host'];
 
 			path = path.replace(re, replacement);
 
@@ -155,8 +171,6 @@ function saveFileLog (message, path, callback) {
 
 	});
 
-
-
 }
 
 exports.init = function (options, parent) {
@@ -166,7 +180,7 @@ exports.init = function (options, parent) {
 
 	return new FileLog(options, parent);
 
-}
+};
 
 // var TR_LOG = exports.init({
 // 	paths: [
@@ -185,4 +199,3 @@ exports.init = function (options, parent) {
 // TR_LOG.log({ activity_id: 'XXX', user_id: 'YYY' }, { random: Math.random() });
 
 // TR_LOG.log({ activity_id: 'XXX', user_id: 'YYY' }, { random: Math.random() });
-
