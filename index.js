@@ -110,9 +110,9 @@ FileLog.prototype.log = function (keys, message) {
 				if (!c.key) return false;
 
 				if (_.has(c, 'value'))
-					return _.get(message, key) === c.value;
+					return _.get(message, c.key) === c.value;
 				else
-					return _.has(message, key);
+					return _.has(message, c.key);
 			});
 
 			if (!passed) return;
