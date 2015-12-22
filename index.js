@@ -103,6 +103,21 @@ FileLog.prototype.log = function (keys, message) {
 
 	_.each(self.paths, function (pathOption) {
 
+		// dealing with paths that have some condition in em
+		if (pathOption.condition) {
+
+			var passed = _.every(pathOption.condition, function (c) {
+				if (!c.key) return false;
+
+				if (_.has(c, 'value'))
+					return _.get(message, key) === c.value;
+				else
+					return _.has(message, key);
+			});
+
+			if (!passed) return;
+		}
+
 		var path = pathOption.path;
 
 		if (message.place) {
